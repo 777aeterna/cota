@@ -62,9 +62,9 @@ def convert_values(
     if np.any(unc_arr < 0):
         raise ValueError("Las incertidumbres no pueden ser negativas.")
 
-    # Convertir incertidumbre como diferencia (val + u) - val para manejar offsets (ej. °C -> K)
-    shifted = np.asarray(_Q(arr + unc_arr, u_from).to(u_to).magnitude, dtype=np.float64)
-    converted_unc = np.abs(shifted - converted)
+    # Factor de escala lineal sin offset (ej. °C -> K tiene escala 1.0, cm -> m tiene 0.01)
+    scale = abs(float(_Q(1.0, u_from).to(u_to).magnitude) - float(_Q(0.0, u_from).to(u_to).magnitude))
+    converted_unc = unc_arr * scale
     return converted, converted_unc
 
 
