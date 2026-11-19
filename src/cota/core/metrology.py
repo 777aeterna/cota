@@ -10,7 +10,7 @@ from typing import Literal
 import numpy as np
 from scipy import stats
 
-from metrilab.core.validation import validate_finite_array
+from cota.core.validation import validate_finite_array
 
 DistributionType = Literal["rectangular", "triangular", "normal"]
 

@@ -7,7 +7,7 @@ from collections.abc import Sequence
 import numpy as np
 import pint
 
-from metrilab.core.validation import validate_finite_array
+from cota.core.validation import validate_finite_array
 
 _UREG = pint.UnitRegistry()
 _Q = _UREG.Quantity

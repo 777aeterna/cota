@@ -10,7 +10,7 @@ import numpy as np
 import sympy
 from scipy import optimize, stats
 
-from metrilab.core.validation import (
+from cota.core.validation import (
     parse_safe_expression,
     validate_finite_array,
     validate_positive_uncertainties,

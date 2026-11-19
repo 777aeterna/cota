@@ -8,14 +8,14 @@ import math
 
 from fastapi import APIRouter
 
-from metrilab.api.schemas import (
+from cota.api.schemas import (
     ExportLatexRequest,
     ExportLatexResponse,
     ParseCsvRequest,
     ParseCsvResponse,
 )
-from metrilab.core.metrology import format_measurement
-from metrilab.core.units import format_unit_latex
+from cota.core.metrology import format_measurement
+from cota.core.units import format_unit_latex
 
 router = APIRouter(prefix="/api/data", tags=["Datos y Exportación"])
 

@@ -1,6 +1,6 @@
 import math
 import pytest
-from metrilab.core.metrology import (
+from cota.core.metrology import (
     calculate_type_a,
     calculate_type_b,
     combine_uncertainties,

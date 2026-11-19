@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from metrilab.api.schemas import (
+from cota.api.schemas import (
     FitModelInfo,
     FitModelsCatalogResponse,
     FitParameterOut,
@@ -12,7 +12,7 @@ from metrilab.api.schemas import (
     LinearFitRequest,
     NonlinearFitRequest,
 )
-from metrilab.core.fitting import (
+from cota.core.fitting import (
     BUILTIN_MODELS,
     FitResult,
     fit_linear_weighted,

@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from metrilab.api.schemas import (
+from cota.api.schemas import (
     AnalyticalPropagationRequest,
     AnalyticalPropagationResponse,
     MonteCarloPropagationRequest,
     MonteCarloPropagationResponse,
 )
-from metrilab.core.propagation import (
+from cota.core.propagation import (
     VariableSpec,
     propagate_analytical,
     propagate_monte_carlo,

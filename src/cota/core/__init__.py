@@ -1,13 +1,13 @@
-"""Núcleo matemático y metrológico de MetriLab."""
+"""Núcleo matemático y metrológico de Cota."""
 
-from metrilab.core.fitting import (
+from cota.core.fitting import (
     BUILTIN_MODELS,
     FitParameter,
     FitResult,
     fit_linear_weighted,
     fit_nonlinear,
 )
-from metrilab.core.metrology import (
+from cota.core.metrology import (
     CombinedUncertaintyResult,
     TypeAResult,
     TypeBComponent,
@@ -16,14 +16,14 @@ from metrilab.core.metrology import (
     combine_uncertainties,
     format_measurement,
 )
-from metrilab.core.propagation import (
+from cota.core.propagation import (
     AnalyticalPropagationResult,
     MonteCarloResult,
     VariableSpec,
     propagate_analytical,
     propagate_monte_carlo,
 )
-from metrilab.core.units import are_compatible, convert_values, format_unit_latex
+from cota.core.units import are_compatible, convert_values, format_unit_latex
 
 __all__ = [
     "AnalyticalPropagationResult",

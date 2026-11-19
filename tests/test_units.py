@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from metrilab.core.units import are_compatible, convert_values, format_unit_latex
+from cota.core.units import are_compatible, convert_values, format_unit_latex
 
 
 def test_unit_compatibility_and_conversion():

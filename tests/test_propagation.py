@@ -1,6 +1,6 @@
 import math
 import pytest
-from metrilab.core.propagation import (
+from cota.core.propagation import (
     VariableSpec,
     propagate_analytical,
     propagate_monte_carlo,

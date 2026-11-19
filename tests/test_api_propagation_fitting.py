@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from metrilab.api import create_app
+from cota.api import create_app
 
 client = TestClient(create_app())
 

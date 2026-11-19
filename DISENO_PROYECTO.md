@@ -1,6 +1,7 @@
-# MetriLab — Plataforma Web de Análisis Experimental, Metrología y Reportes Científicos
+# Cota — Plataforma Web de Análisis Experimental, Metrología y Reportes Científicos
 
-> **Nombre del proyecto:** **MetriLab** (*Laboratorio Metrológico Digital*)  
+> **Nombre del proyecto:** **Cota** (alude a la *cota de error* de toda medición experimental)  
+> **Identidad visual:** Águila romana estilizada combinada con elementos de ciencias exactas (barra de error, grilla de coordenadas, curva ajustada), en azul eléctrico/cian sobre fondo azul noche.  
 > **Definición:** Plataforma web fullstack open-source en Python diseñada para transformar datos experimentales en resultados científicos rigurosos, visualizaciones de calidad editorial e informes académicos automáticos para estudiantes y docentes de ciencias exactas, naturales e ingeniería.
 
 ---
@@ -14,7 +15,7 @@ En las materias de ciencias e ingeniería (Física I-IV, Química General/Físic
 3. Formatear gráficos mediocres en hojas de cálculo estándar que no respetan convenciones metrológicas ni cifras significativas.
 4. Luchar para pasar tablas y ecuaciones a LaTeX para el informe final.
 
-### 1.2 La Propuesta de MetriLab
+### 1.2 La Propuesta de Cota
 * **Rigor Metrológico Automático:** Implementa el estándar internacional **GUM (Guide to the Expression of Uncertainty in Measurement / JCGM 100:2008)**.
 * **Experiencia de Usuario Premium:** Interfaz oscura/clara moderna inspirada en herramientas contemporáneas de alto nivel (Linear, Raycast, Vercel), con gráficos vectoriales interactivos, microinteracciones y atajos de teclado.
 * **Arranque en un Solo Comando:** El backend en Python sirve la aplicación web moderna empaquetada. El estudiante clona el repositorio, ejecuta `python run.py` y se abre automáticamente en el navegador sin configuraciones complejas de Node ni servidores múltiples.

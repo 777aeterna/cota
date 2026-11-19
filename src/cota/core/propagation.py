@@ -9,8 +9,8 @@ from typing import Literal
 import numpy as np
 import sympy
 
-from metrilab.core.metrology import format_measurement
-from metrilab.core.validation import parse_safe_expression
+from cota.core.metrology import format_measurement
+from cota.core.validation import parse_safe_expression
 
 MCDistribution = Literal["normal", "uniform", "triangular"]
 

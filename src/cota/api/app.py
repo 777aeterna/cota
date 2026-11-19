@@ -1,4 +1,4 @@
-"""Factoría principal de la aplicación FastAPI de MetriLab."""
+"""Factoría principal de la aplicación FastAPI de Cota."""
 
 from __future__ import annotations
 
@@ -6,15 +6,15 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from metrilab import __version__
-from metrilab.api.routes import data, fitting, metrology, propagation, units
-from metrilab.api.schemas import HealthResponse
+from cota import __version__
+from cota.api.routes import data, fitting, metrology, propagation, units
+from cota.api.schemas import HealthResponse
 
 
 def create_app() -> FastAPI:
     """Construye y configura la instancia principal de FastAPI."""
     app = FastAPI(
-        title="MetriLab API",
+        title="Cota API",
         description="API REST de análisis experimental, metrología GUM y ajuste de curvas.",
         version=__version__,
     )

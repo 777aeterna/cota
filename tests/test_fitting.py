@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from metrilab.core.fitting import fit_linear_weighted, fit_nonlinear
+from cota.core.fitting import fit_linear_weighted, fit_nonlinear
 
 
 def test_linear_weighted_wls_exact_line():

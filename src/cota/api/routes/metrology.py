@@ -6,7 +6,7 @@ import math
 
 from fastapi import APIRouter
 
-from metrilab.api.schemas import (
+from cota.api.schemas import (
     CombineUncertaintiesRequest,
     CombineUncertaintiesResponse,
     FormatMeasurementRequest,
@@ -16,7 +16,7 @@ from metrilab.api.schemas import (
     TypeBRequest,
     TypeBResponse,
 )
-from metrilab.core.metrology import (
+from cota.core.metrology import (
     calculate_type_a,
     calculate_type_b,
     combine_uncertainties,

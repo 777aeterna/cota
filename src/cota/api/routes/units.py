@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from metrilab.api.schemas import (
+from cota.api.schemas import (
     UnitCompatibilityRequest,
     UnitCompatibilityResponse,
     UnitConvertRequest,
     UnitConvertResponse,
 )
-from metrilab.core.units import are_compatible, convert_values, format_unit_latex
+from cota.core.units import are_compatible, convert_values, format_unit_latex
 
 router = APIRouter(prefix="/api/units", tags=["Unidades"])
 

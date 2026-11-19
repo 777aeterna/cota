@@ -1,4 +1,4 @@
-"""Contratos Pydantic v2 para la API REST de MetriLab."""
+"""Contratos Pydantic v2 para la API REST de Cota."""
 
 from __future__ import annotations
 
