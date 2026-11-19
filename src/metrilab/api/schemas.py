@@ -102,3 +102,115 @@ class UnitConvertResponse(BaseModel):
     values: list[float]
     uncertainties: list[float] | None
     unit_to_latex: str
+
+
+# --- Propagación ---
+
+
+class VariableSpecIn(BaseModel):
+    value: float
+    uncertainty: float = Field(..., ge=0.0)
+    distribution: Literal["normal", "uniform", "triangular"] = "normal"
+
+
+class CovarianceEntryIn(BaseModel):
+    var1: str
+    var2: str
+    covariance: float
+
+
+class AnalyticalPropagationRequest(BaseModel):
+    expression: str = Field(..., min_length=1)
+    variables: dict[str, VariableSpecIn] = Field(..., min_length=1)
+    covariances: list[CovarianceEntryIn] | None = None
+
+
+class AnalyticalPropagationResponse(BaseModel):
+    value: float
+    uncertainty: float
+    partial_derivatives: dict[str, float]
+    variance_contributions: dict[str, float]
+    formula_latex: str
+    formatted_text: str
+    formatted_latex: str
+
+
+class MonteCarloPropagationRequest(BaseModel):
+    expression: str = Field(..., min_length=1)
+    variables: dict[str, VariableSpecIn] = Field(..., min_length=1)
+    n_samples: int = Field(default=100_000, ge=100, le=500_000)
+    confidence_level: float = Field(default=0.95, gt=0.0, lt=1.0)
+    seed: int | None = None
+    bins: int = Field(default=50, ge=5, le=200)
+
+
+class MonteCarloPropagationResponse(BaseModel):
+    mean: float
+    std_dev: float
+    median: float
+    ci_low: float
+    ci_high: float
+    confidence_level: float
+    n_samples: int
+    histogram_counts: list[int]
+    histogram_edges: list[float]
+    formatted_text: str
+    formatted_latex: str
+
+
+# --- Ajuste de Curvas ---
+
+
+class FitModelInfo(BaseModel):
+    id: str
+    name: str
+    formula_latex: str
+    parameters: list[str]
+
+
+class FitModelsCatalogResponse(BaseModel):
+    models: list[FitModelInfo]
+
+
+class FitParameterOut(BaseModel):
+    name: str
+    value: float
+    uncertainty: float
+
+
+class LinearFitRequest(BaseModel):
+    x: list[float] = Field(..., min_length=3)
+    y: list[float] = Field(..., min_length=3)
+    dy: list[float] = Field(..., min_length=3)
+    dx: list[float] | None = None
+    confidence_level: float = Field(default=0.95, gt=0.0, lt=1.0)
+    grid_points: int = Field(default=100, ge=20, le=500)
+
+
+class NonlinearFitRequest(BaseModel):
+    x: list[float] = Field(..., min_length=3)
+    y: list[float] = Field(..., min_length=3)
+    model: str = Field(..., min_length=1)
+    dy: list[float] | None = None
+    p0: dict[str, float] | None = None
+    custom_expression: str | None = None
+    param_names: list[str] | None = None
+    confidence_level: float = Field(default=0.95, gt=0.0, lt=1.0)
+    grid_points: int = Field(default=100, ge=20, le=500)
+
+
+class FitResponse(BaseModel):
+    model_name: str
+    parameters: dict[str, FitParameterOut]
+    covariance_matrix: list[list[float]]
+    chi_squared: float
+    reduced_chi_squared: float
+    dof: int
+    p_value: float
+    r_squared: float
+    residuals: list[float]
+    normalized_residuals: list[float]
+    curve_x: list[float]
+    curve_y: list[float]
+    band_low: list[float]
+    band_high: list[float]
