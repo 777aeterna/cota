@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from cota import __version__
 from cota.api.routes import data, fitting, metrology, propagation, units
 from cota.api.schemas import HealthResponse
+from cota.web import STATIC_DIR
 
 
 def create_app() -> FastAPI:
@@ -45,5 +47,12 @@ def create_app() -> FastAPI:
     app.include_router(propagation.router)
     app.include_router(fitting.router)
     app.include_router(data.router)
+
+    # Interfaz web: estáticos en /static y la SPA en /
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+    @app.get("/", include_in_schema=False)
+    def index() -> FileResponse:
+        return FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-cache"})
 
     return app
