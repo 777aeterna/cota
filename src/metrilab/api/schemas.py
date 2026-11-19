@@ -214,3 +214,35 @@ class FitResponse(BaseModel):
     curve_y: list[float]
     band_low: list[float]
     band_high: list[float]
+
+
+# --- Datos (CSV / LaTeX) ---
+
+
+class ParseCsvRequest(BaseModel):
+    text: str = Field(..., min_length=1)
+    decimal_comma: bool | None = None
+
+
+class ParseCsvResponse(BaseModel):
+    headers: list[str]
+    rows: list[list[float]]
+    delimiter: str
+
+
+class LatexColumnIn(BaseModel):
+    name: str = Field(..., min_length=1)
+    unit: str | None = None
+    values: list[float] = Field(..., min_length=1)
+    uncertainties: list[float] | None = None
+
+
+class ExportLatexRequest(BaseModel):
+    caption: str = "Resultados experimentales"
+    label: str = "tab:resultados"
+    columns: list[LatexColumnIn] = Field(..., min_length=1)
+    sig_figs: int | None = Field(default=None, ge=1, le=6)
+
+
+class ExportLatexResponse(BaseModel):
+    latex: str

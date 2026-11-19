@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from metrilab import __version__
-from metrilab.api.routes import fitting, metrology, propagation, units
+from metrilab.api.routes import data, fitting, metrology, propagation, units
 from metrilab.api.schemas import HealthResponse
 
 
@@ -44,5 +44,6 @@ def create_app() -> FastAPI:
     app.include_router(units.router)
     app.include_router(propagation.router)
     app.include_router(fitting.router)
+    app.include_router(data.router)
 
     return app
