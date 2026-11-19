@@ -9,6 +9,9 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/777aeterna/cota/actions/workflows/ci.yml">
+    <img src="https://github.com/777aeterna/cota/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  </a>
   <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.12+" />
   <img src="https://img.shields.io/badge/FastAPI-0.110%2B-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Licencia-MIT-3B82F6?style=flat-square" alt="Licencia MIT" />
@@ -57,7 +60,7 @@ Solo necesitás **Python 3.12+** (no hace falta instalar Node.js para correr la 
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/<tu-usuario>/cota.git
+git clone https://github.com/777aeterna/cota.git
 cd cota
 
 # 2. Crear y activar entorno virtual

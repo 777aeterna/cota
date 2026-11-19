@@ -26,6 +26,11 @@ dev = [
     "httpx>=0.27",
 ]
 
+[project.urls]
+Homepage = "https://github.com/777aeterna/cota"
+Repository = "https://github.com/777aeterna/cota"
+Issues = "https://github.com/777aeterna/cota/issues"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
