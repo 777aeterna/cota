@@ -1,2 +1,315 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><title>Cota</title><link rel="stylesheet" href="/static/css/cota.css"></head><body><h1>Cota</h1></body></html>
+<html lang="es" data-tema="oscuro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cota — Análisis experimental y metrología</title>
+  <meta name="description" content="Cota: análisis de datos experimentales, incertidumbres GUM, propagación de errores y ajuste de curvas para laboratorios de ciencias exactas e ingeniería." />
+  <meta name="theme-color" content="#0b0f17" />
+  <link rel="icon" type="image/png" href="/static/img/favicon.png" />
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/static/vendor/katex/katex.min.css" />
+  <link rel="stylesheet" href="/static/css/cota.css" />
+  <script>
+    // Aplicar el tema guardado antes de pintar para evitar parpadeos.
+    try { const t = localStorage.getItem("cota-tema"); if (t) document.documentElement.dataset.tema = t; } catch (_) {}
+  </script>
+  <script defer src="/static/vendor/plotly.min.js"></script>
+  <script defer src="/static/vendor/katex/katex.min.js"></script>
+  <script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#ajuste" aria-label="Cota — inicio">
+      <img src="/static/img/logo-cota-transparent.png" alt="Logo de Cota: águila romana con barra de error y curva ajustada" />
+      <span class="brand-text">
+        <span class="brand-name">Cota</span>
+        <span class="brand-tag">Análisis experimental y metrología</span>
+      </span>
+    </a>
+
+    <nav class="tabs" role="tablist" aria-label="Módulos">
+      <button class="tab" role="tab" data-vista="ajuste" aria-selected="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M6 16c3-1 5-8 8-9s4 3 7 2"/><circle cx="8" cy="14" r="1"/><circle cx="13" cy="9" r="1"/><circle cx="18" cy="10" r="1"/></svg>
+        Ajuste de curvas
+      </button>
+      <button class="tab" role="tab" data-vista="propagacion" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h4l3 10h4"/><path d="M15 7h5M15 17h5"/><path d="M17.5 4.5v5"/></svg>
+        Propagación
+      </button>
+      <button class="tab" role="tab" data-vista="gum" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18"/><path d="M8 3h8M8 21h8"/><circle cx="12" cy="12" r="2.5"/></svg>
+        Incertidumbre GUM
+      </button>
+      <button class="tab" role="tab" data-vista="unidades" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h14l-3-3M21 16H7l3 3"/></svg>
+        Unidades
+      </button>
+    </nav>
+
+    <div class="topbar-actions">
+      <span class="status-pill" id="estado-api" title="Estado del motor de cálculo">
+        <span class="status-dot"></span><span class="status-text">Conectando…</span>
+      </span>
+      <a class="btn btn-ghost btn-sm" href="/docs" target="_blank" rel="noopener" title="Documentación interactiva de la API">API</a>
+      <button class="btn btn-icon" id="btn-tema" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= AJUSTE DE CURVAS ================= -->
+    <section class="view active" id="vista-ajuste" aria-label="Ajuste de curvas">
+      <div class="view-head">
+        <div>
+          <h1>Ajuste de curvas</h1>
+          <p>Pegá tus mediciones desde Excel o una planilla, elegí un modelo físico y obtené parámetros con incertidumbre, χ² reducido, residuos y banda de confianza.</p>
+        </div>
+      </div>
+
+      <div class="layout-3">
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title"><span class="n">1</span> Datos</h2>
+            <select class="select" id="aj-ejemplo" style="width:auto" aria-label="Cargar ejemplo">
+              <option value="">Cargar ejemplo…</option>
+              <option value="hooke">Ley de Hooke (lineal)</option>
+              <option value="york">Calibración con δx y δy (York)</option>
+              <option value="rc">Descarga de un capacitor RC</option>
+              <option value="gauss">Pico espectral (gaussiana)</option>
+              <option value="osc">Oscilador amortiguado</option>
+            </select>
+          </div>
+          <div class="card-body">
+            <div class="grid-toolbar">
+              <button class="btn btn-sm" id="aj-fila">+ Fila</button>
+              <button class="btn btn-sm" id="aj-pegar" title="Pegar desde el portapapeles">Pegar</button>
+              <button class="btn btn-sm btn-ghost" id="aj-limpiar">Limpiar</button>
+            </div>
+            <div id="aj-grilla"></div>
+            <div class="grid-hint">Tip: copiá columnas desde Excel/Sheets y pegá con <span class="mono">Ctrl+V</span> en cualquier celda. Se admite coma decimal.</div>
+            <div style="margin-top:12px" class="row">
+              <div class="field" style="margin:0"><label for="aj-xlabel">Eje X</label><input class="input" id="aj-xlabel" value="x" /></div>
+              <div class="field" style="margin:0"><label for="aj-ylabel">Eje Y</label><input class="input" id="aj-ylabel" value="y" /></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title"><span class="n">2</span> Gráfico</h2>
+              <div class="row tight">
+                <button class="btn btn-sm btn-ghost" id="aj-png">PNG</button>
+                <button class="btn btn-sm btn-ghost" id="aj-svg">SVG</button>
+              </div>
+            </div>
+            <div class="card-body"><div class="plot" id="aj-plot"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Residuos normalizados</h2><span class="faint" style="font-size:12px">(yᵢ − f(xᵢ)) / σᵢ</span></div>
+            <div class="card-body"><div class="plot sm" id="aj-res"></div></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title"><span class="n">3</span> Modelo</h2></div>
+            <div class="card-body">
+              <div class="field">
+                <label for="aj-modelo">Modelo físico</label>
+                <select class="select" id="aj-modelo"></select>
+              </div>
+              <div class="formula" id="aj-formula"></div>
+              <div id="aj-custom" class="hidden" style="margin-top:12px">
+                <div class="field"><label for="aj-expr">Expresión f(x)</label><input class="input mono" id="aj-expr" value="A*sin(w*x + p)" /></div>
+                <div class="field"><label for="aj-params">Parámetros (separados por coma)</label><input class="input mono" id="aj-params" value="A, w, p" /></div>
+                <div class="field"><label for="aj-p0">Valores iniciales (opcional)</label><input class="input mono" id="aj-p0" placeholder="1, 1, 0" /></div>
+              </div>
+              <div class="row" style="margin-top:12px">
+                <div class="field" style="margin:0">
+                  <label for="aj-conf">Nivel de confianza</label>
+                  <select class="select" id="aj-conf"><option value="0.6827">68,27 % (1σ)</option><option value="0.95" selected>95 %</option><option value="0.99">99 %</option></select>
+                </div>
+              </div>
+              <div style="margin-top:14px"><button class="btn btn-primary btn-block" id="aj-ajustar">Ajustar modelo <kbd>Ctrl ⏎</kbd></button></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2 class="card-title"><span class="n">4</span> Resultados</h2><span id="aj-metodo"></span></div>
+            <div class="card-body" id="aj-resultados"><div class="empty-note">Ajustá un modelo para ver los parámetros con su incertidumbre.</div></div>
+            <div class="card-foot">
+              <button class="btn btn-sm" id="aj-latex">Tabla LaTeX</button>
+              <button class="btn btn-sm" id="aj-latex-params">Parámetros LaTeX</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PROPAGACIÓN ================= -->
+    <section class="view" id="vista-propagacion" aria-label="Propagación de incertidumbres">
+      <div class="view-head">
+        <div>
+          <h1>Propagación de incertidumbres</h1>
+          <p>Escribí la fórmula de tu magnitud derivada. Cota calcula las derivadas parciales simbólicamente (GUM) y lo contrasta con una simulación de Monte Carlo (JCGM 101).</p>
+        </div>
+      </div>
+      <div class="layout-2">
+        <div class="stack">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title"><span class="n">1</span> Fórmula</h2>
+              <select class="select" id="pr-ejemplo" style="width:auto" aria-label="Ejemplos">
+                <option value="">Ejemplos…</option>
+                <option value="pendulo">Gravedad con péndulo</option>
+                <option value="densidad">Densidad de un cilindro</option>
+                <option value="ohm">Potencia eléctrica</option>
+                <option value="lente">Lente delgada</option>
+              </select>
+            </div>
+            <div class="card-body">
+              <div class="field"><label for="pr-expr">f(variables)</label><input class="input mono" id="pr-expr" value="4*pi**2*L/T**2" spellcheck="false" /></div>
+              <div class="formula" id="pr-preview"></div>
+              <div class="grid-hint">Funciones: sin, cos, tan, exp, log, sqrt, abs · Constantes: pi, E · Potencia: <span class="mono">**</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title"><span class="n">2</span> Variables</h2><span class="faint" style="font-size:12px">detectadas automáticamente</span></div>
+            <div class="card-body"><div id="pr-vars"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title"><span class="n">3</span> Simulación</h2></div>
+            <div class="card-body">
+              <div class="row">
+                <div class="field"><label for="pr-n">Muestras Monte Carlo</label>
+                  <select class="select" id="pr-n"><option value="10000">10 000</option><option value="100000" selected>100 000</option><option value="300000">300 000</option></select>
+                </div>
+                <div class="field"><label for="pr-conf">Cobertura</label>
+                  <select class="select" id="pr-conf"><option value="0.6827">68,27 %</option><option value="0.95" selected>95 %</option><option value="0.99">99 %</option></select>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-block" id="pr-calcular">Propagar incertidumbre <kbd>Ctrl ⏎</kbd></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="row" style="align-items:stretch">
+            <div class="hero"><div class="hero-label">Analítico (GUM)</div><div class="hero-value" id="pr-ana">—</div><div class="hero-sub">Serie de Taylor de primer orden</div></div>
+            <div class="hero"><div class="hero-label">Monte Carlo (JCGM 101)</div><div class="hero-value" id="pr-mc">—</div><div class="hero-sub" id="pr-ic">Intervalo de cobertura —</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Distribución simulada de f</h2></div>
+            <div class="card-body"><div class="plot md" id="pr-hist"></div></div>
+          </div>
+          <div class="row" style="align-items:stretch">
+            <div class="card">
+              <div class="card-head"><h2 class="card-title">Contribución a la varianza</h2></div>
+              <div class="card-body" id="pr-contrib"><div class="empty-note">Sin resultados todavía.</div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2 class="card-title">Fórmula de propagación</h2><button class="btn btn-sm btn-ghost" id="pr-copiar">Copiar LaTeX</button></div>
+              <div class="card-body"><div class="formula" id="pr-formula"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= GUM ================= -->
+    <section class="view" id="vista-gum" aria-label="Presupuesto de incertidumbre GUM">
+      <div class="view-head">
+        <div>
+          <h1>Presupuesto de incertidumbre (GUM)</h1>
+          <p>Combiná la dispersión estadística de tus repeticiones (Tipo A) con las incertidumbres instrumentales (Tipo B) y obtené la incertidumbre expandida con grados efectivos de Welch–Satterthwaite.</p>
+        </div>
+      </div>
+      <div class="layout-gum">
+        <div class="card">
+          <div class="card-head"><h2 class="card-title"><span class="n">A</span> Repeticiones (Tipo A)</h2></div>
+          <div class="card-body">
+            <div class="field"><label for="g-muestra">Mediciones repetidas</label>
+              <textarea class="input mono" id="g-muestra" rows="6">2,01  2,03  1,99  2,02  2,00  2,04  1,98  2,01</textarea>
+            </div>
+            <button class="btn btn-block" id="g-calc-a">Analizar muestra</button>
+            <div id="g-res-a" style="margin-top:12px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2 class="card-title"><span class="n">B</span> Instrumentales (Tipo B)</h2><button class="btn btn-sm" id="g-add-b">+ Fuente</button></div>
+          <div class="card-body">
+            <div class="components" id="g-comp-b"></div>
+            <div class="callout" style="margin-top:12px"><span>💡</span><span><b>Regla práctica:</b> resolución de un instrumento digital → distribución rectangular con semiamplitud igual a media división.</span></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title"><span class="n">Σ</span> Combinación</h2></div>
+            <div class="card-body">
+              <div class="row">
+                <div class="field"><label for="g-valor">Valor central</label><input class="input mono" id="g-valor" placeholder="media de la muestra" /></div>
+                <div class="field"><label for="g-conf">Cobertura</label>
+                  <select class="select" id="g-conf"><option value="0.6827">68,27 %</option><option value="0.95" selected>95 %</option><option value="0.99">99 %</option></select>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-block" id="g-combinar">Combinar incertidumbres <kbd>Ctrl ⏎</kbd></button>
+            </div>
+          </div>
+          <div class="hero"><div class="hero-label">Resultado con incertidumbre expandida</div><div class="hero-value" id="g-final">—</div><div class="hero-sub" id="g-final-sub">k · u<sub>c</sub></div></div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Presupuesto</h2></div>
+            <div class="card-body" id="g-presupuesto"><div class="empty-note">Combiná para ver el aporte de cada fuente.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= UNIDADES ================= -->
+    <section class="view" id="vista-unidades" aria-label="Conversión de unidades">
+      <div class="view-head">
+        <div>
+          <h1>Conversión de unidades</h1>
+          <p>Convertí columnas completas con sus incertidumbres. Las escalas con desplazamiento (°C → K) conservan correctamente la incertidumbre.</p>
+        </div>
+      </div>
+      <div class="layout-2">
+        <div class="card">
+          <div class="card-head"><h2 class="card-title"><span class="n">1</span> Unidades</h2><span id="u-compat"></span></div>
+          <div class="card-body">
+            <div class="row">
+              <div class="field"><label for="u-from">Desde</label><input class="input mono" id="u-from" value="cm" /></div>
+              <div class="field"><label for="u-to">Hacia</label><input class="input mono" id="u-to" value="m" /></div>
+            </div>
+            <div class="chips" id="u-chips" style="margin-bottom:12px"></div>
+            <div class="row">
+              <div class="field"><label for="u-vals">Valores</label><textarea class="input mono" id="u-vals" rows="7">12,5
+25,0
+37,4
+50,1</textarea></div>
+              <div class="field"><label for="u-uncs">Incertidumbres (opcional)</label><textarea class="input mono" id="u-uncs" rows="7">0,1
+0,1
+0,1
+0,1</textarea></div>
+            </div>
+            <button class="btn btn-primary btn-block" id="u-convertir">Convertir <kbd>Ctrl ⏎</kbd></button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2 class="card-title"><span class="n">2</span> Resultado</h2><button class="btn btn-sm btn-ghost" id="u-copiar">Copiar columna</button></div>
+          <div class="card-body" id="u-res"><div class="empty-note">Los valores convertidos aparecerán aquí.</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Cota · Software libre para laboratorios de ciencias exactas, naturales e ingeniería</span>
+    <span>Incertidumbres según <span class="gold">GUM JCGM 100:2008</span> · Monte Carlo según <span class="gold">JCGM 101</span></span>
+  </footer>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>
